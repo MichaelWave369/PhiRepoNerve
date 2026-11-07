@@ -96,12 +96,52 @@ def main(argv=None):
     code_run.add_argument("--image", required=True, help="Locally available image@sha256:digest")
     code_run.add_argument("--execute", action="store_true",
                           help="Explicitly allow restricted Docker execution")
+    handoff = sub.add_parser("handoff", help="Construct ↔ Agentora local training contract")
+    handoff.add_argument("--packs", default=None, help="Local knowledge-pack directory")
+    handoff.add_argument("--reviews-db", default=None, help="Local review ledger")
+    handoff.add_argument("--code-tasks", default=None, help="Local Code Lab task fixtures")
+    handoff.add_argument("--trial-tasks", default=None, help="Local structured task fixtures")
+    handoff_ops = handoff.add_subparsers(dest="handoff_action", required=True)
+    issue = handoff_ops.add_parser("create", help="Create a digest-pinned, non-authorizing handoff")
+    issue.add_argument("--mode", choices=["code-lab", "artifact-repair"], required=True)
+    issue.add_argument("--task", required=True)
+    issue.add_argument("--request-id", required=True)
+    issue.add_argument("--agent-label", required=True)
+    intake = handoff_ops.add_parser("inspect", help="Inspect an untrusted result; hold for verification")
+    intake.add_argument("--request", required=True, help="Saved local handoff JSON")
+    intake.add_argument("--report", required=True, help="Local Code Lab or trial result JSON")
     sub.add_parser("welcome", help="Print the trusted, versioned Φ Welcome Charter")
 
     args = parser.parse_args(argv)
     if args.command == "welcome":
         from .welcome import welcome_charter
         print(json.dumps(welcome_charter(), indent=2, ensure_ascii=False))
+        return 0
+    if args.command == "handoff":
+        from .handoff import (
+            HandoffError, create, inspect_report, load_json_file, task_by_mode,
+        )
+        from .load import PackError, read_packs
+        from .review import ReviewError, ReviewStore
+        try:
+            packs = read_packs(args.packs)
+            statuses = ReviewStore(args.reviews_db).status_map(packs)
+            if args.handoff_action == "create":
+                task = task_by_mode(
+                    args.mode, args.task, args.code_tasks, args.trial_tasks
+                )
+                output = create(args.mode, task, packs, statuses,
+                                args.request_id, args.agent_label)
+            else:
+                request = load_json_file(args.request)
+                report = load_json_file(args.report)
+                output = inspect_report(
+                    request, report, packs, statuses,
+                    code_tasks=args.code_tasks, trial_tasks=args.trial_tasks,
+                )
+        except (HandoffError, PackError, ReviewError) as exc:
+            parser.error(str(exc))
+        print(json.dumps(output, indent=2, ensure_ascii=False))
         return 0
     if args.command == "code":
         from .sandbox import SandboxError, approved, catalogue, get_task, read_tasks, run, show

@@ -145,3 +145,22 @@ The next engineering step is an authenticated Agentora worker behind a
 microVM boundary, immutable evaluator suites held outside the candidate
 workspace, signed provenance, identity-bound receipts and consent-based
 privilege escalation.
+
+
+## Agentora Training Bridge preview: read-only, held by default
+
+The new phireponerve handoff create/inspect CLI exports a versioned,
+local-only request that combines an exact digest-approved ΦLoad reference
+pack with a pinned Code Lab or structured trial fixture and the Welcome
+Charter. The agent label is advisory only. No local lease, private repo
+metadata, GitHub token, execution privilege or deployment authority is included.
+
+Inspection reconstructs the handoff from the **current local reviewed pack
+and task** and strictly compares the request, preventing stale or forged
+authority fields from passing. It checks supported result fields and digest
+matches, but a caller-provided result is *not* independent evidence. Even
+reported PASS is held until Agentora independently corroborates worker
+identity, authorized lease/fence, pinned source HEAD and execution provenance.
+
+The bridge is an adapter contract, **not** a live Agentora consumer. It
+does not edit Agentora, start an agent, invoke Docker or add an HTTP route.
