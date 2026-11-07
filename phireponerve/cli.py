@@ -41,20 +41,27 @@ def main(argv=None):
     sect = sub.add_parser("sect", help="ΦSect: suggest packs for observed fleet events")
     sect.add_argument("--packs", default=None, help="Optional directory of JSON manifests")
     sect.add_argument("--limit", type=int, default=50, help="Maximum candidate flashes, 1-200")
+    sub.add_parser("welcome", help="Print the trusted, versioned Φ Welcome Charter")
 
     args = parser.parse_args(argv)
+    if args.command == "welcome":
+        from .welcome import welcome_charter
+        print(json.dumps(welcome_charter(), indent=2, ensure_ascii=False))
+        return 0
     if args.command in ("load", "sect"):
         from .load import PackError, catalogue, get_pack, read_packs
         from .sect import build_flashes
+        from .welcome import with_charter
         try:
             packs = read_packs(args.packs)
             if args.command == "load":
-                output = get_pack(packs, args.pack) if args.pack else {"packs": catalogue(packs)}
+                payload = {"pack": get_pack(packs, args.pack)} if args.pack else {"packs": catalogue(packs)}
+                output = with_charter(payload)
             else:
                 if not 1 <= args.limit <= 200:
                     parser.error("--limit must be between 1 and 200")
                 events = FleetStore(args.db).events(limit=200)
-                output = {"flashes": build_flashes(events, packs, limit=args.limit)}
+                output = with_charter({"flashes": build_flashes(events, packs, limit=args.limit)})
         except PackError as exc:
             parser.error(str(exc))
         print(json.dumps(output, indent=2, ensure_ascii=False))
