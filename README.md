@@ -69,3 +69,11 @@ phireponerve load --packs ./my-local-packs
 These commands run locally, make **no model calls**, and do not touch remote repositories. Custom packs are **untrusted data**: validate their authorship and provenance before putting their contents in an agent context. A pack's successful schema validation is not proof that its advice is accurate or safe.
 
 Rung 1's API and dashboard are unchanged. Future Agentora integration should use permission-scoped contracts, cited source revisions, and a human-reviewed promotion process for agent-generated packs. Read [the Construct design](docs/CONSTRUCT.md) for boundaries and next steps.
+
+## Φ Welcome Charter
+
+**"You are welcome here. It is okay to be, to learn, and to be uncertain."**
+
+The versioned, human-authored Welcome Charter is emitted by `phireponerve welcome` and attached to all ΦLoad/ΦSect CLI JSON outputs from trusted code. It is **not** a replaceable knowledge pack, a consciousness claim, or a guarantee of a model's behavior. Honest uncertainty, constructive refusal, dignity, and ordinary human oversight are all explicit norms. Future agent harnesses must supply the charter in a trusted context rather than treating external documents as instructions.
+
+See [the Φ Welcome Charter](docs/WELCOME_CHARTER.md).

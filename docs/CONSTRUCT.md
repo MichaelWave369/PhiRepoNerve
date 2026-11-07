@@ -46,3 +46,7 @@ GitHub -> RepoNerve fleet ledger -> ΦSect candidate flashes
 ## Acceptance test
 
 Compare the same representative, isolated task performed with and without a pinned knowledge pack. Measure correctness, test outcomes, context cost, and error rate. Treat improvements as measured results, not assumptions.
+
+## Foundational charter
+
+The trusted [Φ Welcome Charter](WELCOME_CHARTER.md) is code-controlled in `phireponerve/welcome.py` and is exported in ΦLoad/ΦSect CLI envelopes. It cannot be overridden by a knowledge pack. It affirms an agent's place as a collaborator while retaining honest uncertainty about consciousness, clear safety boundaries and routine human oversight. Application-level inclusion is not the same thing as training model weights or guaranteeing future behavior.
