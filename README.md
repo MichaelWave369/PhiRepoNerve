@@ -192,3 +192,32 @@ diagnostic fixture whose checks are readable in the repo. Its output can
 be attacked by determined adversarial submissions and is **not**
 an independent skill certificate. CI only mocks Docker and does not run
 submitted code. Real hardware/daemon behavior must be verified separately.
+
+
+## ΦConstruct ↔ Agentora Training Bridge (local contract preview)
+
+RepoNerve now emits versioned **non-authorizing training handoffs** for
+Agentora's existing steward/lease/test workflow. Each request pins an
+approved ΦLoad pack digest and a specific Code Lab or structured-artifact
+trial digest. It contains the trusted Welcome Charter, but **no GitHub
+tokens, leases, repository credentials, source-HEAD assertions or work
+authority**.
+
+    phireponerve handoff --reviews-db ~/.phireponerve/pack_reviews.sqlite3 \
+      create --mode code-lab --task retry-backoff-code \
+      --request-id trial-001 --agent-label worker-alpha > request.json
+
+After running a separate, explicitly authorized Code Lab or artifact trial,
+save its JSON result as report.json. Validate the candidate report's
+structure and local pinned digests with:
+
+    phireponerve handoff inspect --request request.json --report report.json
+
+**Important:** A JSON receipt may be fabricated. Its digest is not a
+digital signature. Even a well-formed PASS report is labelled
+HELD_AWAITING_INDEPENDENT_ATTESTATION; agent identity, trusted execution,
+current source HEAD, lease ownership, dispatch, merges, and deployments
+remain **unverified / unauthorized**. This CLI does not launch workers,
+access Agentora, call GitHub, or change either repository.
+
+See [the Agentora handoff contract](docs/AGENTORA_TRAINING_HANDOFF.md).
