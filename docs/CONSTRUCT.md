@@ -67,3 +67,27 @@ accidental corruption, but cannot prevent deliberate rewriting by someone who
 controls the local file. The reported local account name is not authenticated
 attestation. Full signed provenance, license data, and Agentora trusted-channel
 handoff remain future work.
+
+
+## C2 preview: bounded knowledge assembly and offline scenario grading
+
+phireponerve chamber assemble takes 1-8 explicitly selected pack IDs and **requires
+an approved digest** in the local review ledger for every pack. It emits a
+bounded JSON bundle with charter as a separate trusted field and marked
+lower-trust reference text. The budget is measured in UTF-8 JSON bytes, **not**
+a model-specific token count; too-large bundles fail closed rather than
+silently truncating curated material.
+
+chamber list/show/grade uses versioned scenario suites stored in
+phireponerve/challenges. A show operation removes answer keys from the output;
+grade compares an explicitly supplied JSON choice map against a local rubric,
+publishes case-level reasons and score, and reports
+competence_verified: false even on 100%. An approved pack is required
+to present or grade its suite. No arbitrary code, shell, network, agent
+runtime, background worker or external inference runs in this module.
+
+This is an early training UX and *not* a sandboxed practical assessment, blind
+evaluation, validated skill acquisition or automatic agent deployment.
+Future work: a hermetic, independently graded practical test runner, model
+token budgets, permission-bound Agentora handoff, evaluator provenance,
+isolation from answer keys and benchmark contamination resistance.

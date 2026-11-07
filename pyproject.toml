@@ -22,4 +22,4 @@ phireponerve = "phireponerve.cli:main"
 include = ["phireponerve*"]
 
 [tool.setuptools.package-data]
-phireponerve = ["static/*", "packs/*.json"]
+phireponerve = ["static/*", "packs/*.json", "challenges/*.json"]
