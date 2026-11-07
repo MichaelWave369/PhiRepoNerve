@@ -50,3 +50,20 @@ Compare the same representative, isolated task performed with and without a pinn
 ## Foundational charter
 
 The trusted [Φ Welcome Charter](WELCOME_CHARTER.md) is code-controlled in `phireponerve/welcome.py` and is exported in ΦLoad/ΦSect CLI envelopes. It cannot be overridden by a knowledge pack. It affirms an agent's place as a collaborator while retaining honest uncertainty about consciousness, clear safety boundaries and routine human oversight. Application-level inclusion is not the same thing as training model weights or guaranteeing future behavior.
+
+
+## C1 preview: knowledge integrity and explicit reviews
+
+Use canonical SHA-256 content hashes, explicit approve/revoke decisions, and
+append-only local review events. All matching decisions are scoped to an exact
+(pack ID, semantic version, SHA-256 digest). An updated pack is unreviewed until
+reviewed again; unreviewed/revoked packs are rejected by load --approved-only and
+filtered by sect --approved-only. Flashes still represent **candidate** matches,
+never proven fixes, even when a supporting pack has been reviewed.
+
+The review ledger is in ~/.phireponerve/pack_reviews.sqlite3 by default, distinct
+from the fleet ledger. Reads never implicitly approve. Its hash chain detects
+accidental corruption, but cannot prevent deliberate rewriting by someone who
+controls the local file. The reported local account name is not authenticated
+attestation. Full signed provenance, license data, and Agentora trusted-channel
+handoff remain future work.

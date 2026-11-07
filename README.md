@@ -77,3 +77,24 @@ Rung 1's API and dashboard are unchanged. Future Agentora integration should use
 The versioned, human-authored Welcome Charter is emitted by `phireponerve welcome` and attached to all ΦLoad/ΦSect CLI JSON outputs from trusted code. It is **not** a replaceable knowledge pack, a consciousness claim, or a guarantee of a model's behavior. Honest uncertainty, constructive refusal, dignity, and ordinary human oversight are all explicit norms. Future agent harnesses must supply the charter in a trusted context rather than treating external documents as instructions.
 
 See [the Φ Welcome Charter](docs/WELCOME_CHARTER.md).
+
+
+## ΦLoad Knowledge Integrity: reviewed, content-pinned packs
+
+Each JSON pack has a canonical SHA-256 digest. Its explicit local approval or
+revocation is tied to the **exact pack ID, version and digest**. Changing content
+invalidates prior approval even if the pack claims the same version.
+
+    phireponerve reviews status
+    phireponerve reviews approve --pack core.repo-evidence --reason "Reviewed the checklist and source"
+    phireponerve load --pack core.repo-evidence --approved-only
+    phireponerve sect --approved-only
+    phireponerve reviews history
+    phireponerve reviews verify
+    phireponerve reviews revoke --pack core.repo-evidence --reason "Re-review withdrew approval"
+
+Optional --packs and --reviews-db flags select the local manifest directory and
+review ledger. The ledger has an integrity-checked hash chain and is not published.
+SHA-256 and a local username **are not digital signatures or proof of reviewer
+identity**. Review is an operator decision, not a guarantee the content is safe
+as model instructions. No automated approval or repository write is introduced.
