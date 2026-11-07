@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "phireponerve"
+version = "0.1.0"
+description = "Local-first GitHub fleet census, change ledger and agent context API"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [{name = "MichaelWave369"}]
+dependencies = []
+
+[project.optional-dependencies]
+server = ["fastapi>=0.115,<1", "uvicorn>=0.30,<1"]
+
+[project.scripts]
+phireponerve = "phireponerve.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["phireponerve*"]
+
+[tool.setuptools.package-data]
+phireponerve = ["static/*"]
