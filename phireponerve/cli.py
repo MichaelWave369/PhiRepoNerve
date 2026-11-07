@@ -71,12 +71,50 @@ def main(argv=None):
     grade = chamber_actions.add_parser("grade", help="Grade JSON choice answers without code execution")
     grade.add_argument("--suite", required=True)
     grade.add_argument("--answers", required=True, help="Path to local JSON answer file")
+    trial = sub.add_parser("trial", help="Φ Construct: safe structured engineering artifact trials")
+    trial.add_argument("--packs", default=None, help="Local knowledge pack directory")
+    trial.add_argument("--reviews-db", default=None, help="Local review ledger path")
+    trial.add_argument("--tasks", default=None, help="Local trial fixture directory")
+    trial_actions = trial.add_subparsers(dest="trial_action", required=True)
+    trial_actions.add_parser("list", help="List structured repair tasks and pack approval")
+    trial_show = trial_actions.add_parser("show", help="Show allowed repairs without revealing rubric")
+    trial_show.add_argument("--task", required=True, help="Trial task ID")
+    trial_grade = trial_actions.add_parser("grade", help="Validate a JSON patch submission")
+    trial_grade.add_argument("--task", required=True, help="Trial task ID")
+    trial_grade.add_argument("--submission", required=True, help="Local patch JSON file")
     sub.add_parser("welcome", help="Print the trusted, versioned Φ Welcome Charter")
 
     args = parser.parse_args(argv)
     if args.command == "welcome":
         from .welcome import welcome_charter
         print(json.dumps(welcome_charter(), indent=2, ensure_ascii=False))
+        return 0
+    if args.command == "trial":
+        from .load import PackError, read_packs
+        from .review import ReviewError, ReviewStore
+        from .trial import (
+            TrialError, get_task, grade_task, read_submission, read_tasks,
+            show_task, task_catalogue,
+        )
+        from .welcome import with_charter
+        try:
+            packs = read_packs(args.packs)
+            states = ReviewStore(args.reviews_db).status_map(packs)
+            tasks = read_tasks(args.tasks)
+            if args.trial_action == "list":
+                output = with_charter({"tasks": [
+                    {**task, "pack_review_status": states.get(task["pack_id"], "unreviewed")}
+                    for task in task_catalogue(tasks)
+                ]})
+            else:
+                task = get_task(tasks, args.task)
+                if args.trial_action == "show":
+                    output = show_task(task, packs, states)
+                else:
+                    output = grade_task(task, read_submission(args.submission), packs, states)
+        except (PackError, ReviewError, TrialError) as exc:
+            parser.error(str(exc))
+        print(json.dumps(output, indent=2, ensure_ascii=False))
         return 0
     if args.command == "chamber":
         from .chamber import (

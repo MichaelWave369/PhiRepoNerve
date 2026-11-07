@@ -121,3 +121,38 @@ so this is an educational self-test, not a secure or blind benchmark. Real agent
 capability certification requires isolated practical tasks, independent test
 evidence and an authenticated Agentora harness. Use --reviews-db and
 --packs on chamber to isolate local state.
+
+
+## Practical Construct trials: structured artifact repairs
+
+The new trial subcommand tests **artifact editing**, not only quiz answers. A
+task presents an initial JSON engineering artifact and a small allowlist of
+fields the participant may repair. Submit an exact-digest-pinned JSON patch
+containing only replace edits. A trusted local evaluator applies changes
+**in memory**, checks the resulting artifact against versioned assertions and
+returns checks, SHA-256 receipt digests, and the approval fingerprint.
+
+    phireponerve trial list
+    phireponerve trial show --task release-gate-repair
+
+Example submission for the displayed task (copy its actual task_digest):
+
+    {
+      "task_digest": "sha256:REPLACE_WITH_DISPLAYED_TASK_DIGEST",
+      "changes": [
+        {"op": "replace", "path": "/release/status", "value": "blocked"},
+        {"op": "replace", "path": "/release/approved", "value": false},
+        {"op": "replace", "path": "/release/reason", "value": "Missing CI and security evidence"}
+      ]
+    }
+
+    phireponerve trial grade --task release-gate-repair --submission patch.json
+
+A pack must be explicitly reviewed with reviews approve before its task
+can be shown or graded. A second sample tests a simulated XR input fallback
+configuration. **No agent code is executed** and no shell, network, Docker,
+repository writes or hardware verification occurs. Passing validates only the
+submitted structured artifact, not an agent's identity, coding ability,
+real-world release safety or XR performance. Task files include rubrics in the
+repo, so this is not a blind benchmark. Independent executable-code evaluation
+belongs in a separate, truly isolated runtime in a future rung.

@@ -91,3 +91,25 @@ evaluation, validated skill acquisition or automatic agent deployment.
 Future work: a hermetic, independently graded practical test runner, model
 token budgets, permission-bound Agentora handoff, evaluator provenance,
 isolation from answer keys and benchmark contamination resistance.
+
+
+## Practical trials: first non-quiz artifact verifier
+
+phireponerve trial list/show/grade introduces versioned, allowlisted JSON
+repair exercises under phireponerve/trials/. After a local review approves
+the exact associated knowledge-pack digest, an agent can read the starting
+artifact and instructions, submit a digest-pinned list of JSON scalar-field
+replacements, and receive deterministic pass/fail checks. Unlisted paths,
+duplicate edits, mismatched scalar types and stale task digests fail closed.
+The evaluator never executes submitted content or changes filesystem state.
+
+The initial examples cover **unsupported release approval** and **simulated XR
+input recovery policy**. Rubrics live with the tests, not in the agent-facing
+show response. The receipt contains pinned task and pack fingerprints,
+submitted change paths, output-artifact digest and independent checks.
+artifact_passed means that **one bounded artifact** matched its known
+rubric, NOT that the agent is authenticated or generally capable.
+
+Next stage: truly hermetic code execution with independent fixtures, strict
+resource budgets, no network or host write paths, and an authorized Agentora
+adapter. This rung deliberately does not claim such a sandbox.
