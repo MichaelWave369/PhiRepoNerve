@@ -8,7 +8,8 @@ import unittest
 from pathlib import Path
 
 from phireponerve.cli import main
-from phireponerve.load import PackError, catalogue, get_pack, read_packs, validate_pack
+from phireponerve.load import PackError, catalogue, get_pack, pack_digest, read_packs, validate_pack
+from phireponerve.review import ReviewError, ReviewStore
 from phireponerve.sect import build_flashes, matches
 from phireponerve.store import FleetStore
 from phireponerve.welcome import welcome_charter, with_charter
@@ -167,6 +168,79 @@ class WelcomeTests(unittest.TestCase):
         with contextlib.redirect_stdout(io.StringIO()) as stdout:
             self.assertEqual(main(["load"]), 0)
         self.assertEqual(json.loads(stdout.getvalue())["charter"], welcome_charter())
+
+
+class IntegrityTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+        self.path = self.root / "reviews.sqlite3"
+        self.reviews = ReviewStore(self.path)
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def test_digest_is_content_bound_but_order_independent(self):
+        p = pack()
+        reordered = dict(reversed(list(p.items())))
+        self.assertEqual(pack_digest(p), pack_digest(reordered))
+        self.assertNotEqual(pack_digest(p), pack_digest({**p, "knowledge": ["other"]}))
+
+    def test_no_implicit_approval_or_db_creation(self):
+        self.assertEqual(self.reviews.status_map([pack()]), {"core.triage": "unreviewed"})
+        self.assertEqual(self.reviews.history(), [])
+        self.assertFalse(self.path.exists())
+
+    def test_explicit_approval_revocation_and_drift(self):
+        p = pack()
+        self.reviews.record(p, "approved", "Source and text inspected locally")
+        self.assertEqual(self.reviews.status_map([p])["core.triage"], "approved")
+        changed = {**p, "knowledge": ["Different content"]}
+        self.assertEqual(self.reviews.status_map([changed])["core.triage"], "unreviewed")
+        self.reviews.record(p, "revoked", "New review withdrew prior approval")
+        self.assertEqual(self.reviews.status_map([p])["core.triage"], "revoked")
+        self.assertEqual(self.reviews.verify()["entries"], 2)
+
+    def test_tampered_history_fails_closed(self):
+        import sqlite3
+        p = pack()
+        self.reviews.record(p, "approved", "Reviewed by authorized local operator")
+        with sqlite3.connect(self.path) as db:
+            db.execute("UPDATE pack_reviews SET decision='revoked' WHERE id=1")
+        with self.assertRaises(ReviewError):
+            self.reviews.status_map([p])
+        with self.assertRaises(ReviewError):
+            self.reviews.record(p, "approved", "Cannot override a damaged ledger")
+
+    def test_cli_review_gate_and_revocation(self):
+        (self.root / "one.json").write_text(json.dumps(pack()), encoding="utf-8")
+        common = ["--packs", str(self.root), "--reviews-db", str(self.path)]
+
+        def run(args):
+            with contextlib.redirect_stdout(io.StringIO()) as output:
+                self.assertEqual(main(args), 0)
+            return json.loads(output.getvalue())
+
+        self.assertEqual(run(["load", *common])["packs"][0]["review_status"], "unreviewed")
+        with self.assertRaises(SystemExit):
+            run(["load", *common, "--pack", "core.triage", "--approved-only"])
+        run(["reviews", *common, "approve", "--pack", "core.triage",
+             "--reason", "Source and guidance were inspected"])
+        loaded = run(["load", *common, "--pack", "core.triage", "--approved-only"])
+        self.assertEqual(loaded["review_status"], "approved")
+        self.assertEqual(loaded["digest"], pack_digest(pack()))
+        self.assertEqual(loaded["charter"], welcome_charter())
+        run(["reviews", *common, "revoke", "--pack", "core.triage",
+             "--reason", "Explicit revocation following review"])
+        with self.assertRaises(SystemExit):
+            run(["load", *common, "--pack", "core.triage", "--approved-only"])
+
+    def test_flash_metadata_never_equates_candidate_with_approval(self):
+        flash = build_flashes([event()], [pack()])[0]
+        self.assertEqual(flash["pack"]["review_status"], "unreviewed")
+        self.assertEqual(flash["pack"]["digest"], pack_digest(pack()))
+        self.assertEqual(flash["status"], "candidate_unverified")
+
 
 
 if __name__ == "__main__":

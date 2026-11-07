@@ -2,6 +2,7 @@
 
 Knowledge is data, not trusted agent instructions or executable code.
 """
+import hashlib
 import json
 import re
 from pathlib import Path
@@ -91,6 +92,7 @@ def catalogue(packs):
         "id": p["id"], "version": p["version"], "title": p["title"],
         "description": p["description"], "events": p["events"],
         "repo_contains": p["repo_contains"], "provenance": p["provenance"],
+        "digest": pack_digest(p),
     } for p in packs]
 
 
@@ -99,3 +101,11 @@ def get_pack(packs, identifier):
         if pack["id"] == identifier:
             return pack
     raise PackError("Unknown knowledge pack: " + identifier)
+
+
+def pack_digest(pack):
+    """SHA256 of the validated, canonical JSON manifest, regardless of key order."""
+    validate_pack(pack)
+    raw = json.dumps(pack, sort_keys=True, ensure_ascii=False,
+                     separators=(",", ":")).encode("utf-8")
+    return "sha256:" + hashlib.sha256(raw).hexdigest()

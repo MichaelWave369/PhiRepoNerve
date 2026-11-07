@@ -38,9 +38,25 @@ def main(argv=None):
     load = sub.add_parser("load", help="ΦLoad: list or explicitly retrieve local knowledge packs")
     load.add_argument("--packs", default=None, help="Optional directory of JSON manifests")
     load.add_argument("--pack", default=None, help="Explicit ID of one pack to retrieve")
+    load.add_argument("--approved-only", action="store_true", help="Only return approved packs")
+    load.add_argument("--reviews-db", default=None, help="Local review ledger path")
     sect = sub.add_parser("sect", help="ΦSect: suggest packs for observed fleet events")
     sect.add_argument("--packs", default=None, help="Optional directory of JSON manifests")
     sect.add_argument("--limit", type=int, default=50, help="Maximum candidate flashes, 1-200")
+    sect.add_argument("--approved-only", action="store_true", help="Only match approved packs")
+    sect.add_argument("--reviews-db", default=None, help="Local review ledger path")
+    reviews = sub.add_parser("reviews", help="Explicit pack review and integrity ledger")
+    reviews.add_argument("--packs", default=None, help="Local JSON manifest directory")
+    reviews.add_argument("--reviews-db", default=None, help="Local review ledger path")
+    actions = reviews.add_subparsers(dest="review_action", required=True)
+    actions.add_parser("status", help="List pack review states")
+    actions.add_parser("verify", help="Check the local review ledger hash chain")
+    history = actions.add_parser("history", help="List recent review decisions")
+    history.add_argument("--limit", type=int, default=100)
+    for action in ("approve", "revoke"):
+        p = actions.add_parser(action, help="Make an explicit human review decision")
+        p.add_argument("--pack", required=True)
+        p.add_argument("--reason", required=True)
     sub.add_parser("welcome", help="Print the trusted, versioned Φ Welcome Charter")
 
     args = parser.parse_args(argv)
@@ -48,21 +64,67 @@ def main(argv=None):
         from .welcome import welcome_charter
         print(json.dumps(welcome_charter(), indent=2, ensure_ascii=False))
         return 0
-    if args.command in ("load", "sect"):
+    if args.command == "reviews":
         from .load import PackError, catalogue, get_pack, read_packs
+        from .review import ReviewError, ReviewStore
+        from .welcome import with_charter
+        store = ReviewStore(args.reviews_db)
+        try:
+            if args.review_action == "verify":
+                output = store.verify()
+            elif args.review_action == "history":
+                output = {"history": store.history(args.limit)}
+            else:
+                packs = read_packs(args.packs)
+                if args.review_action == "status":
+                    states = store.status_map(packs)
+                    output = {"packs": [
+                        {**p, "review_status": states[p["id"]]}
+                        for p in catalogue(packs)
+                    ]}
+                else:
+                    selected = get_pack(packs, args.pack)
+                    decision = "approved" if args.review_action == "approve" else "revoked"
+                    output = {"review": store.record(selected, decision, args.reason)}
+        except (PackError, ReviewError) as exc:
+            parser.error(str(exc))
+        print(json.dumps(with_charter(output), indent=2, ensure_ascii=False))
+        return 0
+    if args.command in ("load", "sect"):
+        from .load import PackError, catalogue, get_pack, pack_digest, read_packs
         from .sect import build_flashes
         from .welcome import with_charter
+        from .review import ReviewError, ReviewStore
         try:
             packs = read_packs(args.packs)
+            states = ReviewStore(args.reviews_db).status_map(packs)
             if args.command == "load":
-                payload = {"pack": get_pack(packs, args.pack)} if args.pack else {"packs": catalogue(packs)}
+                if args.pack:
+                    selected = get_pack(packs, args.pack)
+                    status = states[selected["id"]]
+                    if args.approved_only and status != "approved":
+                        raise PackError("Pack not approved: " + selected["id"])
+                    payload = {"pack": selected, "digest": pack_digest(selected),
+                               "review_status": status}
+                else:
+                    payload = {"packs": [
+                        {**p, "review_status": states[p["id"]]}
+                        for p in catalogue(packs)
+                        if not args.approved_only or states[p["id"]] == "approved"
+                    ]}
                 output = with_charter(payload)
             else:
                 if not 1 <= args.limit <= 200:
                     parser.error("--limit must be between 1 and 200")
+                eligible = [
+                    p for p in packs
+                    if not args.approved_only or states[p["id"]] == "approved"
+                ]
                 events = FleetStore(args.db).events(limit=200)
-                output = with_charter({"flashes": build_flashes(events, packs, limit=args.limit)})
-        except PackError as exc:
+                output = with_charter({"flashes": build_flashes(
+                    events, eligible, limit=args.limit, review_statuses=states
+                )})
+        except (PackError, ReviewError) as exc:
             parser.error(str(exc))
         print(json.dumps(output, indent=2, ensure_ascii=False))
         return 0

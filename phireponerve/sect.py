@@ -1,6 +1,6 @@
 """ΦSect: deterministic evidence-linked candidate flashes, no autonomous execution."""
 
-from .load import KNOWN_EVENTS
+from .load import KNOWN_EVENTS, pack_digest
 
 
 def matches(event, pack):
@@ -13,11 +13,12 @@ def matches(event, pack):
     return not markers or any(marker.casefold() in name.casefold() for marker in markers)
 
 
-def build_flashes(events, packs, limit=100):
+def build_flashes(events, packs, limit=100, review_statuses=None):
     """Make bounded, non-executable suggestions tied to recorded event IDs."""
     if not isinstance(limit, int) or not 1 <= limit <= 200:
         raise ValueError("Flash limit must be between 1 and 200")
     result = []
+    review_statuses = review_statuses or {}
     for event in events:
         for pack in packs:
             if not matches(event, pack):
@@ -38,6 +39,8 @@ def build_flashes(events, packs, limit=100):
                 "pack": {
                     "id": pack["id"],
                     "version": pack["version"],
+                    "digest": pack_digest(pack),
+                    "review_status": review_statuses.get(pack["id"], "unreviewed"),
                     "provenance": pack["provenance"],
                 },
                 "reason": "Declared event trigger and repository-name filter matched",
