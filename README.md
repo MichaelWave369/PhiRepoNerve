@@ -156,3 +156,39 @@ submitted structured artifact, not an agent's identity, coding ability,
 real-world release safety or XR performance. Task files include rubrics in the
 repo, so this is not a blind benchmark. Independent executable-code evaluation
 belongs in a separate, truly isolated runtime in a future rung.
+
+
+## ΦConstruct C3: Code Lab (opt-in restricted Docker)
+
+A first programming exercise can now run *submitted Python code* in a disposable,
+restricted Docker container. **Nothing is executed merely by listing, showing,
+or previewing a task.** The --execute flag explicitly enables container execution.
+
+    phireponerve code list
+    phireponerve code show --task retry-backoff-code
+    # Save def retry_delay(attempt): ... into candidate.py
+    # Use an already locally available Python image with a real SHA-256 digest.
+    phireponerve code run --task retry-backoff-code --submission candidate.py \
+      --image python:3.12-alpine@sha256:<ACTUAL_LOCAL_IMAGE_DIGEST>
+    # Same command with --execute opts into restricted Docker execution.
+
+Before running, you must explicitly review and approve core.repo-evidence with
+phireponerve reviews approve. The image must be referred to by a full
+content digest and already available locally. No automatic Docker pull occurs.
+
+The runner uses a copy of the submitted code in a temporary, read-only bind
+mount. Docker is invoked **without a shell**; network access is disabled,
+capabilities dropped, no-new-privileges enabled, process/memory/CPU/file
+descriptor/time budgets constrained, and the container runs as an unprivileged
+user. All code execution is inside Docker, never by invoking the source on
+the host. The existing fleet observer is unaffected.
+
+**Critical safety limit:** Docker is not a security proof against malicious
+code or kernel/container escape. Do not use a privileged daemon or remote
+Docker context you do not trust. Prefer rootless Docker in a disposable,
+dedicated VM for untrusted agents. Do not mount host secrets, repository
+directories, SSH keys or Docker sockets. The built-in grader is a
+diagnostic fixture whose checks are readable in the repo. Its output can
+be attacked by determined adversarial submissions and is **not**
+an independent skill certificate. CI only mocks Docker and does not run
+submitted code. Real hardware/daemon behavior must be verified separately.

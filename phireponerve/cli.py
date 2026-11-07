@@ -82,12 +82,51 @@ def main(argv=None):
     trial_grade = trial_actions.add_parser("grade", help="Validate a JSON patch submission")
     trial_grade.add_argument("--task", required=True, help="Trial task ID")
     trial_grade.add_argument("--submission", required=True, help="Local patch JSON file")
+    code = sub.add_parser("code", help="ΦConstruct container-only Python Code Lab")
+    code.add_argument("--packs", default=None, help="Local pack manifest directory")
+    code.add_argument("--reviews-db", default=None, help="Local pack review ledger")
+    code.add_argument("--tasks", default=None, help="Code Lab task fixture directory")
+    code_cmd = code.add_subparsers(dest="code_action", required=True)
+    code_cmd.add_parser("list", help="List available code exercises")
+    code_show = code_cmd.add_parser("show", help="Show exercise without its test cases")
+    code_show.add_argument("--task", required=True)
+    code_run = code_cmd.add_parser("run", help="Preview or explicitly run in Docker")
+    code_run.add_argument("--task", required=True)
+    code_run.add_argument("--submission", required=True, help="UTF-8 Python source path")
+    code_run.add_argument("--image", required=True, help="Locally available image@sha256:digest")
+    code_run.add_argument("--execute", action="store_true",
+                          help="Explicitly allow restricted Docker execution")
     sub.add_parser("welcome", help="Print the trusted, versioned Φ Welcome Charter")
 
     args = parser.parse_args(argv)
     if args.command == "welcome":
         from .welcome import welcome_charter
         print(json.dumps(welcome_charter(), indent=2, ensure_ascii=False))
+        return 0
+    if args.command == "code":
+        from .sandbox import SandboxError, approved, catalogue, get_task, read_tasks, run, show
+        from .load import PackError, read_packs
+        from .review import ReviewError, ReviewStore
+        from .welcome import with_charter
+        try:
+            packs = read_packs(args.packs)
+            states = ReviewStore(args.reviews_db).status_map(packs)
+            tasks = read_tasks(args.tasks)
+            if args.code_action == "list":
+                output = with_charter({"code_tasks": [
+                    {**item, "pack_review_status": states.get(item["pack_id"], "unreviewed")}
+                    for item in catalogue(tasks)
+                ]})
+            else:
+                task = get_task(tasks, args.task)
+                if args.code_action == "show":
+                    output = show(task, packs, states)
+                else:
+                    output = run(task, packs, states, args.submission,
+                                 args.image, execute=args.execute)
+        except (SandboxError, PackError, ReviewError) as exc:
+            parser.error(str(exc))
+        print(json.dumps(output, indent=2, ensure_ascii=False))
         return 0
     if args.command == "trial":
         from .load import PackError, read_packs

@@ -113,3 +113,35 @@ rubric, NOT that the agent is authenticated or generally capable.
 Next stage: truly hermetic code execution with independent fixtures, strict
 resource budgets, no network or host write paths, and an authorized Agentora
 adapter. This rung deliberately does not claim such a sandbox.
+
+
+## C3 preview: code execution via restricted, explicitly opted-in container
+
+The Code Lab adds versioned Python function exercises. A task describes a
+function signature and pinning hash; its local tests are **not** presented
+in the code show response. Source is limited to a small regular
+UTF-8 Python file. After verifying an exact approved pack digest, callers
+may **preview** a run by default. Only an explicit --execute starts Docker.
+
+The Docker invocation uses an image named with a full digest and available
+locally (--pull=never), no network, read-only filesystem,
+capability drop, no-new-privileges, resource and duration limits, a
+non-root UID, and only a read-only copy of the submission and task tests.
+CLI arguments are assembled without shell interpolation. Failed or malformed
+reports fail closed. Timed-out runs attempt targeted container cleanup by
+recorded CID. The host never runs the submitted Python directly.
+
+**Limitations:** Docker Engine and the host kernel remain part of the
+trusted computing base. Container isolation is not equivalent to a
+hermetic or adversarially secure sandbox. The tests are distributed with
+the app, so the diagnostic score is not a blind benchmark. A hostile
+submission might spoof grader output or exploit the runner itself.
+A passing result is a bounded test observation, not proof of author
+identity, broad programming competence, software safety or authorized
+deployment. GitHub CI stubs the Docker process; manual evaluation in a
+disposable worker environment remains necessary before production use.
+
+The next engineering step is an authenticated Agentora worker behind a
+microVM boundary, immutable evaluator suites held outside the candidate
+workspace, signed provenance, identity-bound receipts and consent-based
+privilege escalation.
