@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "id": "create.xr-input-triage",
+  "version": "0.1.0",
+  "title": "XR input lifecycle debugging",
+  "description": "A candidate debugging checklist for controller and hand-tracking transitions in XR projects.",
+  "events": [
+    "first_observed",
+    "push_activity_observed",
+    "default_branch_changed"
+  ],
+  "repo_contains": [
+    "BTM",
+    "OverStrings",
+    "SparkTheSubstrate",
+    "PhiOS-XR"
+  ],
+  "knowledge": [
+    "Reproduce the input failure on the target device and browser before assigning a root cause.",
+    "Log WebXR session lifecycle and input-source changes with timestamps, without collecting personal sensor data unnecessarily.",
+    "Inspect hand/controller fallback behavior, input state resets, and frame-loop tracking availability.",
+    "Add a regression fixture for the observed failure and measure behavior on the actual target hardware.",
+    "Treat this checklist as a debugging aid, not as evidence that any particular XR bug exists."
+  ],
+  "provenance": "curated v0.1 engineering checklist; not a diagnosis of a repository"
+}

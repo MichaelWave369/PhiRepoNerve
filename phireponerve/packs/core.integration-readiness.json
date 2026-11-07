@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "id": "core.integration-readiness",
+  "version": "0.1.0",
+  "title": "Cross-repository integration readiness",
+  "description": "Help agents check declared interfaces and compatibility before connecting PhiOS ecosystem modules.",
+  "events": [
+    "first_observed",
+    "renamed",
+    "default_branch_changed",
+    "push_activity_observed"
+  ],
+  "repo_contains": [
+    "PhiOS",
+    "PhiCloud",
+    "PhiID",
+    "Agentora",
+    "PhiMadaPrime",
+    "PhiMail"
+  ],
+  "knowledge": [
+    "Map dependencies from actual manifest and API contracts, never inferred repository-name similarity alone.",
+    "Identify contract versions, caller/callee roles, authentication boundaries, and consent requirements.",
+    "Test compatibility against pinned commits with a minimal fixture, then record observed pass/fail evidence.",
+    "Propose integration changes for review; repository observation itself must not grant write or merge authority."
+  ],
+  "provenance": "docs/ARCHITECTURE.md (R4-R6 roadmap; future integrations unverified)"
+}

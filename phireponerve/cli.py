@@ -34,7 +34,31 @@ def main(argv=None):
     watch.add_argument("--interval", type=int, default=600, help="Seconds; minimum 60")
     serve = sub.add_parser("serve", help="Serve loopback-only dashboard/API")
     serve.add_argument("--port", type=int, default=8765)
+
+    load = sub.add_parser("load", help="ΦLoad: list or explicitly retrieve local knowledge packs")
+    load.add_argument("--packs", default=None, help="Optional directory of JSON manifests")
+    load.add_argument("--pack", default=None, help="Explicit ID of one pack to retrieve")
+    sect = sub.add_parser("sect", help="ΦSect: suggest packs for observed fleet events")
+    sect.add_argument("--packs", default=None, help="Optional directory of JSON manifests")
+    sect.add_argument("--limit", type=int, default=50, help="Maximum candidate flashes, 1-200")
+
     args = parser.parse_args(argv)
+    if args.command in ("load", "sect"):
+        from .load import PackError, catalogue, get_pack, read_packs
+        from .sect import build_flashes
+        try:
+            packs = read_packs(args.packs)
+            if args.command == "load":
+                output = get_pack(packs, args.pack) if args.pack else {"packs": catalogue(packs)}
+            else:
+                if not 1 <= args.limit <= 200:
+                    parser.error("--limit must be between 1 and 200")
+                events = FleetStore(args.db).events(limit=200)
+                output = {"flashes": build_flashes(events, packs, limit=args.limit)}
+        except PackError as exc:
+            parser.error(str(exc))
+        print(json.dumps(output, indent=2, ensure_ascii=False))
+        return 0
     if args.command == "serve":
         try:
             import uvicorn
