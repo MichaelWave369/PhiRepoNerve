@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "id": "core.repo-evidence",
+  "version": "0.1.0",
+  "title": "Repository evidence and change triage",
+  "description": "Separate observed GitHub metadata changes from verified build, release, and security outcomes.",
+  "events": [
+    "first_observed",
+    "visible_again",
+    "renamed",
+    "visibility_changed",
+    "archival_changed",
+    "default_branch_changed",
+    "push_activity_observed",
+    "no_longer_visible"
+  ],
+  "repo_contains": [],
+  "knowledge": [
+    "Treat a pushed_at change as activity, never as proof of tests, functionality, or release readiness.",
+    "Pin inspections to an exact commit SHA and record the repository ID, source URL, observation time, and limits of evidence.",
+    "Distinguish a repository that is no longer visible from a repository confirmed deleted.",
+    "Collect CI, license, build, dependencies, and release proof separately; mark uninspected aspects unknown.",
+    "Keep private-repository paths and derived inventory on a local authorized service, never on public Pages."
+  ],
+  "provenance": "docs/ARCHITECTURE.md (project policy; validate against exact code revision)"
+}

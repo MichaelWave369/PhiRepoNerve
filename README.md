@@ -50,3 +50,22 @@ python -m compileall -q phireponerve
 See [architecture and next rungs](docs/ARCHITECTURE.md) for data semantics and the Agentora / PhiMadaPrime handoff plan.
 
 **One ecosystem. Evidence first. Agents second.**
+
+
+## ΦLoad + ΦSect (Construct preview)
+
+Two **independent, read-only modules inside RepoNerve**:
+
+- **ΦLoad** reads versioned local JSON knowledge packs. It validates a small v1 manifest schema, limits file size/count, rejects symlink packs and duplicate IDs, and **never executes pack contents**. The default packs are curated checklists, not universal model training or proof of competency.
+- **ΦSect** compares already-recorded fleet events to declared pack triggers and repository-name filters. Each **FLASH** is an unverified suggestion that includes the originating event ID and scan ID, never a claim of root cause or permission to change code.
+
+```bash
+phireponerve load                        # list available packs, no full content
+phireponerve load --pack core.repo-evidence  # explicitly retrieve a pack
+phireponerve --db ~/.phireponerve/fleet.sqlite3 sect --limit 20
+phireponerve load --packs ./my-local-packs
+```
+
+These commands run locally, make **no model calls**, and do not touch remote repositories. Custom packs are **untrusted data**: validate their authorship and provenance before putting their contents in an agent context. A pack's successful schema validation is not proof that its advice is accurate or safe.
+
+Rung 1's API and dashboard are unchanged. Future Agentora integration should use permission-scoped contracts, cited source revisions, and a human-reviewed promotion process for agent-generated packs. Read [the Construct design](docs/CONSTRUCT.md) for boundaries and next steps.
