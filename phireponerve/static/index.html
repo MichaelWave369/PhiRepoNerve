@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#080e1c">
+<title>Φ RepoNerve | Fleet Intelligence</title>
+<style>
+:root {color-scheme:dark; --bg:#080e1c; --panel:#111b30; --raised:#182641; --line:#2b3a52; --text:#eaf2fc; --muted:#9aaec7; --aqua:#63f4cb; --amber:#ffc777; --red:#ff8794;}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 80% -18%, #153953, transparent 54%),var(--bg);font:14px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;color:var(--text);min-height:100vh}
+header,main,footer{width:min(1320px,calc(100% - 40px));margin:auto}
+header{display:flex;justify-content:space-between;align-items:center;gap:24px;padding:32px 0 22px;border-bottom:1px solid var(--line)}
+.brand{display:flex;gap:16px;align-items:center}
+.mark{width:54px;height:54px;border:1px solid #4ee6bc;border-radius:17px;background:linear-gradient(135deg,#1f695e,#12213e);display:grid;place-items:center;font-size:31px;color:var(--aqua);box-shadow:0 0 28px #3fffb31b}
+.eyebrow{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--aqua);font-weight:700}
+h1{margin:0;letter-spacing:-.055em;font-size:clamp(25px,3vw,38px);line-height:1.1}
+.subtitle{color:var(--muted);margin:5px 0 0}
+.meta{color:var(--muted);font-size:12px;text-align:right}
+.live{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--aqua);box-shadow:0 0 9px var(--aqua);margin-right:7px}
+main{padding:28px 0 70px}
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.card,.panel{border:1px solid var(--line);background:linear-gradient(150deg,#141e32,#0e1728);border-radius:17px}
+.card{padding:20px 23px;min-height:115px}
+.card .metric{font-size:37px;font-weight:750;letter-spacing:-.06em;font-variant-numeric:tabular-nums}
+.card .caption{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.09em}
+.card:first-child .metric{color:var(--aqua)}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:18px;margin:30px 0 13px}
+h2{font-size:16px;margin:0;letter-spacing:-.015em}
+.controls{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+input,button{background:var(--raised);border:1px solid var(--line);border-radius:9px;color:var(--text);padding:10px 12px;font:inherit}
+input{width:min(310px,65vw)}
+input:focus,button:focus{outline:2px solid var(--aqua);outline-offset:2px}
+button{cursor:pointer}
+button:hover{border-color:var(--aqua)}
+button:disabled{opacity:.45;cursor:not-allowed}
+.panel{overflow:hidden}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;color:var(--muted);font-weight:650;font-size:11px;text-transform:uppercase;letter-spacing:.09em;background:#172238}
+th,td{padding:13px 15px;border-bottom:1px solid #26334a}
+tr:last-child td{border-bottom:0}
+.repo-link{color:var(--text);text-decoration:none;font-weight:650}
+.repo-link:hover{color:var(--aqua);text-decoration:underline}
+.description{color:var(--muted);font-size:12px;max-width:470px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.tag{display:inline-block;border-radius:99px;padding:2px 9px;background:#243951;font-size:11px;color:#cee5fa}
+.tag.private{color:var(--amber);background:#513b252f;border:1px solid #9a713b66}
+.tag.archived{color:#d1d9e9;border:1px solid #64748b}
+.two{display:grid;grid-template-columns:1.2fr .8fr;gap:16px;margin-top:18px}
+.section-body{padding:18px}
+.event{border-bottom:1px solid var(--line);padding:11px 0;display:grid;grid-template-columns:135px 1fr;gap:12px}
+.event:last-child{border-bottom:0}
+.event-kind{font-size:11px;color:var(--aqua);font-weight:700;letter-spacing:.02em}
+.event-title{font-weight:600;overflow-wrap:anywhere}
+.event-time{color:var(--muted);font-size:11px;margin-top:2px}
+.empty{color:var(--muted);padding:28px}
+.note{border-left:2px solid var(--amber);padding:12px 15px;margin:20px 0 0;background:#5b421822;border-radius:0 9px 9px 0;color:#d6e1ef}
+.small{font-size:12px;color:var(--muted)}
+.pager{display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:13px 15px;border-top:1px solid var(--line)}
+footer{border-top:1px solid var(--line);padding:20px 0 38px;color:var(--muted);font-size:12px}
+@media(max-width:900px){.cards{grid-template-columns:repeat(2,1fr)}.two{grid-template-columns:1fr}.hide-small{display:none}}
+@media(max-width:570px){header{align-items:flex-start;flex-direction:column}.meta{text-align:left}.cards{gap:10px}.card{padding:15px}.card .metric{font-size:30px}.bar{align-items:flex-start;flex-direction:column}th,td{padding:11px 8px}.description{max-width:120px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><div class="mark" aria-hidden="true">Φ</div><div>
+    <div class="eyebrow">Living fleet intelligence</div><h1>RepoNerve</h1>
+    <p class="subtitle">One ecosystem. Evidence first. Agents second.</p>
+  </div></div>
+  <div class="meta"><div><span class="live"></span>LOCAL OBSERVER · READ ONLY</div>
+    <div id="scanTime">No completed scan yet</div></div>
+</header>
+<main>
+<div class="cards">
+  <div class="card"><div class="metric" id="repoCount">—</div><div class="caption">Visible repositories</div></div>
+  <div class="card"><div class="metric" id="privateCount">—</div><div class="caption">Private in local ledger</div></div>
+  <div class="card"><div class="metric" id="archivedCount">—</div><div class="caption">Archived projects</div></div>
+  <div class="card"><div class="metric" id="eventCount">—</div><div class="caption">Observed changes</div></div>
+</div>
+<div class="bar"><h2>Repository directory</h2><div class="controls">
+  <input id="search" type="search" placeholder="Search repositories…" aria-label="Search repositories">
+  <button id="refresh" type="button">Refresh view</button></div>
+</div>
+<div class="panel">
+  <table><thead><tr><th>Repository</th><th class="hide-small">Description</th><th>Visibility</th><th class="hide-small">Activity observed</th></tr></thead>
+    <tbody id="repoRows"><tr><td colspan="4" class="empty">Loading local inventory…</td></tr></tbody></table>
+  <div class="pager"><span class="small" id="pageLabel">—</span><button id="previous" type="button">Previous</button><button id="next" type="button">Next</button></div>
+</div>
+<div class="two">
+  <section class="panel"><div class="section-body"><h2>Change chronicle</h2><p class="small">Historical observations, not confirmed deletions or releases.</p><div id="eventRows" aria-live="polite"></div></div></section>
+  <section class="panel"><div class="section-body"><h2>Observer integrity</h2><div id="observerStatus" class="small">Checking snapshot status…</div>
+    <p class="note">This dashboard reads a private local database. Refresh view does not request a new GitHub scan. A failed inventory leaves the last complete snapshot intact.</p>
+    <p class="small">Run <code>phireponerve watch</code> in a separate terminal for ongoing observation. Never expose this API or its private repo inventory on GitHub Pages.</p>
+  </div></section>
+</div>
+</main>
+<footer>Φ RepoNerve Rung 1 · GET-only GitHub census · No agent dispatch or write authority</footer>
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const size = 50;
+let offset = 0, displayed = 0, query = "", requestNumber = 0;
+const text = (element, value) => { element.textContent = String(value ?? ""); return element; };
+const child = (tag, value, className) => {
+  const el = document.createElement(tag); if (className) el.className = className;
+  text(el, value); return el;
+};
+function date(value) { return value ? new Date(value).toLocaleString() : "Unknown"; }
+async function loadJSON(url) {
+  const response = await fetch(url, {cache:"no-store"});
+  if (!response.ok) throw new Error("HTTP " + response.status);
+  return response.json();
+}
+async function overview() {
+  try {
+    const [summary, events] = await Promise.all([loadJSON("/api/summary"), loadJSON("/api/events?limit=18")]);
+    text($("repoCount"), summary.active_repositories);
+    text($("privateCount"), summary.private_repositories);
+    text($("archivedCount"), summary.archived_repositories);
+    text($("eventCount"), summary.recorded_events);
+    const complete = summary.latest_complete;
+    text($("scanTime"), complete ? "Last complete scan: " + date(complete.observed_at) : "No completed scan yet");
+    const recent = summary.latest_attempt;
+    text($("observerStatus"), !recent ? "Not initialized. Run phireponerve scan." :
+      "Last attempt: " + recent.status.toUpperCase() + " at " + date(recent.observed_at) +
+      (recent.error ? ". Error: " + recent.error : "") +
+      ". Last complete inventory: " + (complete ? complete.repo_count + " repos." : "none.") +
+      " No longer visible: " + summary.no_longer_visible + ".");
+    const holder = $("eventRows"); holder.replaceChildren();
+    if (!events.items.length) { holder.append(child("p","No changes recorded yet.","small")); return; }
+    for (const e of events.items) {
+      const row = child("div", "", "event");
+      row.append(child("div",e.event_type.replaceAll("_"," ").toUpperCase(),"event-kind"));
+      const body = child("div","");
+      body.append(child("div",e.full_name,"event-title"));
+      const details = (e.before_value !== null || e.after_value !== null)
+        ? " · " + String(e.before_value ?? "—").slice(0,45) + " → " + String(e.after_value ?? "—").slice(0,45) : "";
+      body.append(child("div",date(e.observed_at) + details,"event-time"));
+      row.append(body); holder.append(row);
+    }
+  } catch (err) {
+    text($("observerStatus"),"Local API unavailable: " + err.message);
+  }
+}
+async function repositories() {
+  const requestId = ++requestNumber;
+  const url = "/api/repos?limit=" + size + "&offset=" + offset + "&q=" + encodeURIComponent(query);
+  const rows = $("repoRows"); rows.replaceChildren();
+  rows.append(child("tr", ""));
+  rows.firstChild.append(child("td","Loading…","empty"));
+  try {
+    const response = await loadJSON(url);
+    if (requestId !== requestNumber) return;
+    const items = response.items || []; displayed = items.length;
+    rows.replaceChildren();
+    if (!items.length) {
+      const row = child("tr",""); const td = child("td","No matching repositories.","empty");
+      td.colSpan = 4; row.append(td); rows.append(row);
+    }
+    for (const repo of items) {
+      const tr = child("tr","");
+      const name = child("td","");
+      const url = String(repo.html_url || "");
+      if (url.startsWith("https://github.com/")) {
+        const link = child("a",repo.full_name,"repo-link");
+        link.href = url; link.target="_blank"; link.rel="noopener noreferrer";
+        name.append(link);
+      } else name.append(child("span",repo.full_name));
+      if (repo.archived) name.append(child("span"," Archived","tag archived"));
+      tr.append(name);
+      tr.append(child("td",repo.description || "No description","description hide-small"));
+      const cell = child("td","");
+      cell.append(child("span",repo.private ? "Private" : "Public", repo.private ? "tag private" : "tag"));
+      tr.append(cell);
+      tr.append(child("td",repo.pushed_at ? date(repo.pushed_at) : "Unknown","small hide-small"));
+      rows.append(tr);
+    }
+    text($("pageLabel"),items.length ? (offset + 1) + "–" + (offset + items.length) : "No results");
+    $("previous").disabled = offset === 0;
+    $("next").disabled = items.length < size;
+  } catch (err) {
+    rows.replaceChildren(); const tr = child("tr","");
+    const td = child("td","Inventory API unavailable: " + err.message,"empty");
+    td.colSpan=4; tr.append(td); rows.append(tr);
+    text($("pageLabel"),"Unavailable");
+    $("previous").disabled=true; $("next").disabled=true;
+  }
+}
+let searchTimer;
+$("search").addEventListener("input", event => {
+  query = event.target.value.trim(); offset=0;
+  clearTimeout(searchTimer); searchTimer=setTimeout(repositories,180);
+});
+$("refresh").addEventListener("click", () => {overview(); repositories();});
+$("previous").addEventListener("click", () => {offset=Math.max(0,offset-size);repositories();});
+$("next").addEventListener("click", () => {if (displayed === size) {offset+=size;repositories();}});
+overview(); repositories(); setInterval(overview,30000);
+</script>
+</body>
+</html>
