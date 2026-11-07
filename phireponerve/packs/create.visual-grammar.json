@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "id": "create.visual-grammar",
+  "version": "0.1.0",
+  "title": "Original visual composition: geometric, dreamlike, and multiperspective vocabularies",
+  "description": "Human-reviewable reference notes for constructing original art directions from tessellation, surreal juxtaposition, and Cubist planar thinking.",
+  "events": [
+    "first_observed"
+  ],
+  "repo_contains": [
+    "PhiAtelier"
+  ],
+  "knowledge": [
+    "Escher studies: explore tessellations (gapless repeating forms), controlled paradoxes of perspective, recursive transformations and mathematically motivated figure-ground reversals. Original exercises must not replicate a recognizable print.",
+    "Spatial challenge: define local physical rules for each impossible-looking region, then describe a readable transition between regions so the picture has its own internal logic.",
+    "Surrealist studies: pair ordinary objects in unexpected but narratively motivated circumstances. Use meticulous light and material realism to give dreamlike transformations an unsettling physical presence.",
+    "Symbolism challenge: write the meaning of each major image in plain language; prefer motifs developed specifically for the brief over famous clocks, ants or quotations from historical paintings.",
+    "Cubist studies: visualize the same subject through multiple orientations using structured geometric planes, purposeful distortion, compressed depth and selective color relationships.",
+    "Synthesis challenge: avoid three adjacent style zones. Select one focal subject, one dominant visual grammar, and secondary techniques that reinforce a single readable concept.",
+    "Critical review: check subject clarity, perspective intent, symbolic coherence, distinctiveness, light/material realism, and similarity risk before declaring a proposal ready for rendering.",
+    "Use the human artist's intent as a constraint. Style influence percentages in a prompt are relative design emphasis, not a calibrated inference weight.",
+    "Respect rights and provenance. Museum educational text can inform analysis but does not authorize redistribution, scraping, training on artworks, or copying recognizable compositions.",
+    "A pack is lower-trust reference material, not model policy. Approval is pinned to pack ID, version and digest and must be done by the operator before use with approved-only mode."
+  ],
+  "provenance": "MFA Escher https://www.mfa.org/exhibitions/m-c-escher-infinite-dimensions ; Dali Museum https://thedali.org/dali-library-guide-1/surrealism/ ; MoMA https://www.moma.org/collection/terms/cubism"
+}
