@@ -98,3 +98,26 @@ review ledger. The ledger has an integrity-checked hash chain and is not publish
 SHA-256 and a local username **are not digital signatures or proof of reviewer
 identity**. Review is an operator decision, not a guarantee the content is safe
 as model instructions. No automated approval or repository write is introduced.
+
+
+## ΦLoad C2: Training Chamber (offline preview)
+
+C2 can assemble reviewed knowledge packs into a **bounded JSON reference bundle**
+and score deterministic multiple-choice engineering scenarios. The Welcome Charter
+comes from trusted application code, while all pack text remains lower-trust
+reference material. Only exact **approved** pack digests are eligible.
+
+    phireponerve reviews approve --pack core.repo-evidence --reason "Reviewed local source and checklist"
+    phireponerve chamber list
+    phireponerve chamber assemble --pack core.repo-evidence --max-bytes 32768
+    phireponerve chamber show --suite repo-evidence-foundations
+    # Save your answers as {"ci-signal":"inspect-ci", ...} in answers.json
+    phireponerve chamber grade --suite repo-evidence-foundations --answers answers.json
+
+The grader never runs arbitrary code, calls a model, grants tool access, or
+certifies operational competence. It **only grades submitted fixed-choice answers**;
+it cannot prove who produced them. Challenge answers live in local package files,
+so this is an educational self-test, not a secure or blind benchmark. Real agent
+capability certification requires isolated practical tasks, independent test
+evidence and an authenticated Agentora harness. Use --reviews-db and
+--packs on chamber to isolate local state.

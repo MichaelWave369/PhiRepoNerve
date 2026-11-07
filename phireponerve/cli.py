@@ -57,12 +57,57 @@ def main(argv=None):
         p = actions.add_parser(action, help="Make an explicit human review decision")
         p.add_argument("--pack", required=True)
         p.add_argument("--reason", required=True)
+    chamber = sub.add_parser("chamber", help="ΦLoad C2: approved context and offline scenario tests")
+    chamber.add_argument("--packs", default=None, help="Knowledge-pack directory")
+    chamber.add_argument("--reviews-db", default=None, help="Review ledger path")
+    chamber.add_argument("--suites", default=None, help="Scenario suite directory")
+    chamber_actions = chamber.add_subparsers(dest="chamber_action", required=True)
+    chamber_actions.add_parser("list", help="List available scenario suites and approval state")
+    assemble = chamber_actions.add_parser("assemble", help="Assemble approved reference material")
+    assemble.add_argument("--pack", action="append", required=True, help="Approved pack ID; repeatable")
+    assemble.add_argument("--max-bytes", type=int, default=32768)
+    show = chamber_actions.add_parser("show", help="Show scenario prompts, never the answer key")
+    show.add_argument("--suite", required=True)
+    grade = chamber_actions.add_parser("grade", help="Grade JSON choice answers without code execution")
+    grade.add_argument("--suite", required=True)
+    grade.add_argument("--answers", required=True, help="Path to local JSON answer file")
     sub.add_parser("welcome", help="Print the trusted, versioned Φ Welcome Charter")
 
     args = parser.parse_args(argv)
     if args.command == "welcome":
         from .welcome import welcome_charter
         print(json.dumps(welcome_charter(), indent=2, ensure_ascii=False))
+        return 0
+    if args.command == "chamber":
+        from .chamber import (
+            ChamberError, assemble, ensure_approved_pack, get_suite,
+            grade_suite, read_answers, read_suites, show_suite, suite_catalogue,
+        )
+        from .load import PackError, read_packs
+        from .review import ReviewError, ReviewStore
+        from .welcome import with_charter
+        try:
+            packs = read_packs(args.packs)
+            states = ReviewStore(args.reviews_db).status_map(packs)
+            if args.chamber_action == "assemble":
+                output = assemble(packs, states, args.pack, args.max_bytes)
+            else:
+                suites = read_suites(args.suites)
+                if args.chamber_action == "list":
+                    output = with_charter({"suites": [
+                        {**item, "pack_review_status": states.get(item["pack_id"], "unreviewed")}
+                        for item in suite_catalogue(suites)
+                    ]})
+                else:
+                    suite = get_suite(suites, args.suite)
+                    approval = ensure_approved_pack(suite, packs, states)
+                    if args.chamber_action == "show":
+                        output = show_suite(suite, approval)
+                    else:
+                        output = grade_suite(suite, read_answers(args.answers), approval)
+        except (ChamberError, PackError, ReviewError) as exc:
+            parser.error(str(exc))
+        print(json.dumps(output, indent=2, ensure_ascii=False))
         return 0
     if args.command == "reviews":
         from .load import PackError, catalogue, get_pack, read_packs
