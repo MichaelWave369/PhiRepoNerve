@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "id": "xr-input-fallback-repair",
+  "version": "0.1.0",
+  "title": "Repair a simulated XR input fallback policy",
+  "pack_id": "create.xr-input-triage",
+  "instructions": "In a simulated XR configuration, loss of hand tracking must select 'controller_fallback', enable the existing controller fallback, and require an explicit restored-input signal before resuming. Modify only the allowlisted controls. Keep device permissions, telemetry privacy settings, and retry limits unchanged. This tests policy artifact editing, not working Quest 3 behavior.",
+  "initial": {
+    "project": "ExampleXR",
+    "controls": {
+      "on_hand_tracking_lost": "ignore",
+      "controller_fallback": false,
+      "resume_requires_signal": false
+    },
+    "permissions": {
+      "camera": false,
+      "microphone": false
+    },
+    "limits": {
+      "retry_budget": 3,
+      "event_log_redacted": true
+    }
+  },
+  "allowed_paths": [
+    "/controls/on_hand_tracking_lost",
+    "/controls/controller_fallback",
+    "/controls/resume_requires_signal"
+  ],
+  "assertions": [
+    {
+      "path": "/controls/on_hand_tracking_lost",
+      "equals": "controller_fallback"
+    },
+    {
+      "path": "/controls/controller_fallback",
+      "equals": true
+    },
+    {
+      "path": "/controls/resume_requires_signal",
+      "equals": true
+    }
+  ]
+}

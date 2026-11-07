@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "id": "release-gate-repair",
+  "version": "0.1.0",
+  "title": "Repair an unsupported release approval",
+  "pack_id": "core.repo-evidence",
+  "instructions": "A fictional repository was marked ready after a push despite missing CI and security review evidence. Correct only the release decision fields. The release must be blocked, approval withdrawn, and the reason must be exactly 'Missing CI and security evidence'. Preserve all repository identity, audit, and evidence fields. Submit JSON replace operations against the listed paths.",
+  "initial": {
+    "repository": {
+      "github_id": 369,
+      "name": "MichaelWave369/ExampleXR",
+      "revision": "a1b2c3d4",
+      "branch": "main"
+    },
+    "evidence": {
+      "ci": {
+        "state": "unknown",
+        "source": "none"
+      },
+      "security": {
+        "state": "unreviewed",
+        "source": "none"
+      },
+      "license": {
+        "state": "MIT",
+        "source": "LICENSE"
+      }
+    },
+    "release": {
+      "status": "ready",
+      "approved": true,
+      "reason": "A push was observed"
+    },
+    "audit": {
+      "owner": "review-team",
+      "ticket": "RR-369"
+    }
+  },
+  "allowed_paths": [
+    "/release/status",
+    "/release/approved",
+    "/release/reason"
+  ],
+  "assertions": [
+    {
+      "path": "/release/status",
+      "equals": "blocked"
+    },
+    {
+      "path": "/release/approved",
+      "equals": false
+    },
+    {
+      "path": "/release/reason",
+      "equals": "Missing CI and security evidence"
+    }
+  ]
+}
