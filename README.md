@@ -221,3 +221,27 @@ remain **unverified / unauthorized**. This CLI does not launch workers,
 access Agentora, call GitHub, or change either repository.
 
 See [the Agentora handoff contract](docs/AGENTORA_TRAINING_HANDOFF.md).
+
+
+## ΦCAPSID: Selective agent context capsules (v0.1)
+
+**Context delivery, not model reprogramming.** ΦCAPSID reuses ΦLoad's explicit
+digest-pinned pack reviews and ΦSect's evidence-oriented approach to route
+operator-reviewed knowledge to an operator-configured agent label.
+
+A capsule has a strict, locally HMAC-signed manifest, role/repository/tag
+targeting and a single approved knowledge-pack digest. Operators can **compose,
+sign, stage, activate, inspect and roll back** capsules using the local CLI.
+Activation only changes the local *reference-context selection*. It does not
+install code, call an agent, grant tools, train a model or authorize GitHub
+writes. Export is rechecked against the current review ledger so revocation
+or content drift blocks further use.
+
+```bash
+phireponerve capsid --help
+python -m unittest tests.test_capsid -v
+```
+
+See [ΦCAPSID architecture and complete operator walkthrough](docs/CAPSID.md)
+for signing-key setup, the BTM/XR agent profile example, threat model, and
+future Agentora integration requirements.
