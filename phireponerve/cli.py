@@ -115,6 +115,13 @@ def main(argv=None):
     capsid.add_argument("--packs", default=None, help="Local ΦLoad pack directory")
     capsid.add_argument("--reviews-db", default=None, help="Local pack-review DB")
     capsid_actions = capsid.add_subparsers(dest="capsid_action", required=True)
+    capsid_compose = capsid_actions.add_parser("compose", help="Draft a reviewed, digest-pinned manifest")
+    capsid_compose.add_argument("--pack", required=True)
+    capsid_compose.add_argument("--id", required=True)
+    capsid_compose.add_argument("--title", required=True)
+    capsid_compose.add_argument("--role", required=True)
+    capsid_compose.add_argument("--repo-marker", required=True)
+    capsid_compose.add_argument("--tag", action="append", default=[])
     capsid_sign = capsid_actions.add_parser("sign", help="Sign an operator-authored manifest")
     capsid_sign.add_argument("--manifest", required=True)
     capsid_sign.add_argument("--key-id", default="local-v1")
@@ -144,6 +151,24 @@ def main(argv=None):
         try:
             if args.capsid_action == "sign":
                 output = sign_manifest(read_json(args.manifest), key_id=args.key_id)
+            elif args.capsid_action == "compose":
+                from .load import get_pack, pack_digest
+                from .capsid import SCHEMA, validate_manifest
+                from .load import read_packs
+                packs = read_packs(args.packs)
+                pack = get_pack(packs, args.pack)
+                if ReviewStore(args.reviews_db).status_map(packs)[pack["id"]] != "approved":
+                    raise CapsidError("Knowledge pack is not approved")
+                output = validate_manifest({
+                    "schema": SCHEMA, "id": args.id, "version": "0.1.0",
+                    "title": args.title,
+                    "description": "Operator-scoped reference context for " + args.pack,
+                    "target": {"roles": [args.role], "repo_contains": [args.repo_marker],
+                               "required_tags": args.tag},
+                    "capabilities": ["reference.read"],
+                    "pack": {"id": pack["id"], "digest": pack_digest(pack)},
+                    "provenance": "Operator-authored local manifest; review before signing",
+                })
             else:
                 store = CapsidStore(args.capsids_db)
                 if args.capsid_action == "rollback":
