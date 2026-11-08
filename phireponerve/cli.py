@@ -110,9 +110,85 @@ def main(argv=None):
     intake = handoff_ops.add_parser("inspect", help="Inspect an untrusted result; hold for verification")
     intake.add_argument("--request", required=True, help="Saved local handoff JSON")
     intake.add_argument("--report", required=True, help="Local Code Lab or trial result JSON")
+    capsid = sub.add_parser("capsid", help="ΦCAPSID: reviewed, locally signed context capsules")
+    capsid.add_argument("--capsids-db", default=None, help="Private local capsule state DB")
+    capsid.add_argument("--packs", default=None, help="Local ΦLoad pack directory")
+    capsid.add_argument("--reviews-db", default=None, help="Local pack-review DB")
+    capsid_actions = capsid.add_subparsers(dest="capsid_action", required=True)
+    capsid_compose = capsid_actions.add_parser("compose", help="Draft a reviewed, digest-pinned manifest")
+    capsid_compose.add_argument("--pack", required=True)
+    capsid_compose.add_argument("--id", required=True)
+    capsid_compose.add_argument("--title", required=True)
+    capsid_compose.add_argument("--role", required=True)
+    capsid_compose.add_argument("--repo-marker", required=True)
+    capsid_compose.add_argument("--tag", action="append", default=[])
+    capsid_sign = capsid_actions.add_parser("sign", help="Sign an operator-authored manifest")
+    capsid_sign.add_argument("--manifest", required=True)
+    capsid_sign.add_argument("--key-id", default="local-v1")
+    capsid_stage = capsid_actions.add_parser("stage", help="Validate and stage a signed capsule")
+    capsid_stage.add_argument("--envelope", required=True)
+    capsid_stage.add_argument("--profile", required=True)
+    capsid_activate = capsid_actions.add_parser("activate", help="Activate staged context only")
+    capsid_activate.add_argument("--stage-id", required=True, type=int)
+    capsid_activate.add_argument("--profile", required=True)
+    capsid_context = capsid_actions.add_parser("context", help="Export revalidated reference bundle")
+    capsid_context.add_argument("--profile", required=True)
+    capsid_rollback = capsid_actions.add_parser("rollback", help="Return an agent to baseline context")
+    capsid_rollback.add_argument("--agent-id", required=True)
+    capsid_history = capsid_actions.add_parser("history", help="List local capsule lifecycle states")
+    capsid_history.add_argument("--agent-id", required=True)
+
     sub.add_parser("welcome", help="Print the trusted, versioned Φ Welcome Charter")
 
     args = parser.parse_args(argv)
+    if args.command == "capsid":
+        from .capsid import (
+            CapsidError, CapsidStore, read_json, sign_manifest,
+        )
+        from .chamber import ChamberError
+        from .load import PackError, read_packs
+        from .review import ReviewError, ReviewStore
+        try:
+            if args.capsid_action == "sign":
+                output = sign_manifest(read_json(args.manifest), key_id=args.key_id)
+            elif args.capsid_action == "compose":
+                from .load import get_pack, pack_digest
+                from .capsid import SCHEMA, validate_manifest
+                from .load import read_packs
+                packs = read_packs(args.packs)
+                pack = get_pack(packs, args.pack)
+                if ReviewStore(args.reviews_db).status_map(packs)[pack["id"]] != "approved":
+                    raise CapsidError("Knowledge pack is not approved")
+                output = validate_manifest({
+                    "schema": SCHEMA, "id": args.id, "version": "0.1.0",
+                    "title": args.title,
+                    "description": "Operator-scoped reference context for " + args.pack,
+                    "target": {"roles": [args.role], "repo_contains": [args.repo_marker],
+                               "required_tags": args.tag},
+                    "capabilities": ["reference.read"],
+                    "pack": {"id": pack["id"], "digest": pack_digest(pack)},
+                    "provenance": "Operator-authored local manifest; review before signing",
+                })
+            else:
+                store = CapsidStore(args.capsids_db)
+                if args.capsid_action == "rollback":
+                    output = store.rollback(args.agent_id)
+                elif args.capsid_action == "history":
+                    output = {"history": store.history(args.agent_id)}
+                else:
+                    packs = read_packs(args.packs)
+                    states = ReviewStore(args.reviews_db).status_map(packs)
+                    profile = read_json(args.profile)
+                    if args.capsid_action == "stage":
+                        output = store.stage(read_json(args.envelope), profile, packs, states)
+                    elif args.capsid_action == "activate":
+                        output = store.activate(args.stage_id, profile, packs, states)
+                    else:
+                        output = store.context(profile, packs, states)
+        except (CapsidError, PackError, ReviewError, ChamberError) as exc:
+            parser.error(str(exc))
+        print(json.dumps(output, ensure_ascii=False, indent=2))
+        return 0
     if args.command == "welcome":
         from .welcome import welcome_charter
         print(json.dumps(welcome_charter(), indent=2, ensure_ascii=False))
