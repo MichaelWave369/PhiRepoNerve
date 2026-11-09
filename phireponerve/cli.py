@@ -34,6 +34,9 @@ def main(argv=None):
     watch.add_argument("--interval", type=int, default=600, help="Seconds; minimum 60")
     serve = sub.add_parser("serve", help="Serve loopback-only dashboard/API")
     serve.add_argument("--port", type=int, default=8765)
+    public = sub.add_parser("export-public", help="Write minimal public-only FieldConstellation handoff locally")
+    public.add_argument("--owner", default="MichaelWave369")
+    public.add_argument("--out", required=True, help="New local JSON output path; existing files are never overwritten")
 
     load = sub.add_parser("load", help="ΦLoad: list or explicitly retrieve local knowledge packs")
     load.add_argument("--packs", default=None, help="Optional directory of JSON manifests")
@@ -141,6 +144,25 @@ def main(argv=None):
     sub.add_parser("welcome", help="Print the trusted, versioned Φ Welcome Charter")
 
     args = parser.parse_args(argv)
+    if args.command == "export-public":
+        from .public_export import PublicHandoffError, public_handoff
+        try:
+            payload = public_handoff(FleetStore(args.db), owner=args.owner)
+        except PublicHandoffError as exc:
+            parser.error(str(exc))
+        path = Path(args.out).expanduser()
+        data = json.dumps(payload, indent=2, ensure_ascii=False) + "\n"
+        flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0)
+        fd = os.open(path, flags, 0o600)
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as stream:
+                stream.write(data)
+        except Exception:
+            path.unlink(missing_ok=True)
+            raise
+        print("Wrote " + str(len(payload["repositories"])) +
+              " public ID observations to " + str(path) + "; never upload to a public repository")
+        return 0
     if args.command == "capsid":
         from .capsid import (
             CapsidError, CapsidStore, read_json, sign_manifest,
