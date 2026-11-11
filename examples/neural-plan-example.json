@@ -1,0 +1,15 @@
+{
+  "schema": "PHI_NEURAL_PLAN_R1",
+  "study_id": "local5070-study",
+  "run_id": "baseline",
+  "engine": "autoresearch",
+  "metric": "val_bpb",
+  "direction": "min",
+  "dataset_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "evaluator_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "tokenizer_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "hardware_id": "rtx5070-12gb",
+  "training_budget_seconds": 300,
+  "max_peak_vram_mb": 11000,
+  "source_ref": "PIN_ACTUAL_UPSTREAM_COMMIT"
+}
