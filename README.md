@@ -245,3 +245,7 @@ python -m unittest tests.test_capsid -v
 See [ΦCAPSID architecture and complete operator walkthrough](docs/CAPSID.md)
 for signing-key setup, the BTM/XR agent profile example, threat model, and
 future Agentora integration requirements.
+
+## Φ Neural Tiny intake (R1.1)
+
+The offline Neural Research Bridge now also accepts `phi_tiny` receipts emitted by PhiStream's educational tiny-Transformer pilot. It checks source/log digests, preserves the fixed evaluator and hardware comparability gates, and blocks comparisons with different optimizer step counts. CPU runs record `peak_vram_mb:0` as **not applicable**, not as CPU memory telemetry. No model training or autonomous actions execute in RepoNerve. See [the intake guide](docs/NEURAL_TINY_INTAKE_R11.md).
