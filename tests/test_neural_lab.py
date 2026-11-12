@@ -32,6 +32,34 @@ class NeuralLabTests(unittest.TestCase):
     def receipt(self, id="baseline"):
         return record(plan(id), self.log, self.code)
 
+    def test_phi_tiny_zero_vram_cpu_receipt(self):
+        p = plan(); p["engine"] = "phi_tiny"; p["hardware_id"] = "cpu-declared"
+        self.log.write_text(LOG.replace("4250.5", "0.0"))
+        r = record(p, self.log, self.code)
+        self.assertTrue(r["admissible"])
+        self.assertEqual(r["metrics"]["peak_vram_mb"], 0.0)
+        self.assertTrue(verify(r, self.log, self.code)["verified"])
+
+    def test_negative_vram_rejected(self):
+        with self.assertRaisesRegex(LabError, "Negative VRAM"):
+            parse_autoresearch_log(LOG.replace("4250.5", "-1"))
+
+    def test_phi_tiny_step_mismatch_rejected(self):
+        p = plan(); p["engine"] = "phi_tiny"
+        before = record(p, self.log, self.code)
+        p["run_id"] = "candidate"
+        self.log.write_text(LOG.replace("num_steps: 720", "num_steps: 719"))
+        after = record(p, self.log, self.code)
+        with self.assertRaisesRegex(LabError, "num_steps"):
+            compare(before, after)
+
+    def test_different_engines_rejected(self):
+        before = self.receipt()
+        p = plan("candidate"); p["engine"] = "phi_tiny"
+        after = record(p, self.log, self.code)
+        with self.assertRaisesRegex(LabError, "engine"):
+            compare(before, after)
+
     def test_valid_record_can_be_verified(self):
         r = self.receipt()
         self.assertTrue(r["admissible"])
