@@ -1,0 +1,10 @@
+{
+  "schema": "PHI_NEURAL_OBSERVATORY_BUNDLE_R1",
+  "study_id": "phi-tiny-v1",
+  "baseline_run_id": "baseline",
+  "min_delta_val_bpb": 0.01,
+  "runs": [
+    {"receipt": "baseline/receipt.json", "log": "baseline/metrics.log", "code": "source/neural_tiny.py"},
+    {"receipt": "candidate/receipt.json", "log": "candidate/metrics.log", "code": "source/neural_tiny.py"}
+  ]
+}
