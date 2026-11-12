@@ -1,0 +1,52 @@
+{
+  "schema": "PHI_NEURAL_REPLICATION_BUNDLE_R1",
+  "study_id": "phi-r5",
+  "device": "cuda",
+  "min_delta_val_bpb": 0.001,
+  "dataset": "dataset.txt",
+  "evaluator": "neural_protocol.py",
+  "pairs": [
+    {
+      "baseline": {
+        "meta": "baseline369/run-meta.json",
+        "receipt": "baseline369/receipt.json",
+        "log": "baseline369/metrics.log",
+        "code": "baseline369/trainer.py"
+      },
+      "candidate": {
+        "meta": "candidate369/run-meta.json",
+        "receipt": "candidate369/receipt.json",
+        "log": "candidate369/metrics.log",
+        "code": "candidate369/trainer.py"
+      }
+    },
+    {
+      "baseline": {
+        "meta": "baseline370/run-meta.json",
+        "receipt": "baseline370/receipt.json",
+        "log": "baseline370/metrics.log",
+        "code": "baseline370/trainer.py"
+      },
+      "candidate": {
+        "meta": "candidate370/run-meta.json",
+        "receipt": "candidate370/receipt.json",
+        "log": "candidate370/metrics.log",
+        "code": "candidate370/trainer.py"
+      }
+    },
+    {
+      "baseline": {
+        "meta": "baseline371/run-meta.json",
+        "receipt": "baseline371/receipt.json",
+        "log": "baseline371/metrics.log",
+        "code": "baseline371/trainer.py"
+      },
+      "candidate": {
+        "meta": "candidate371/run-meta.json",
+        "receipt": "candidate371/receipt.json",
+        "log": "candidate371/metrics.log",
+        "code": "candidate371/trainer.py"
+      }
+    }
+  ]
+}
