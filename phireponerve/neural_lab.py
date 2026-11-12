@@ -82,8 +82,8 @@ def validate_plan(plan):
         _id(plan[field], field)
     if plan["metric"] != "val_bpb" or plan["direction"] != "min":
         raise LabError("R1 supports only minimizing autoresearch val_bpb")
-    if plan["engine"] != "autoresearch":
-        raise LabError("R1 supports only autoresearch log ingestion")
+    if plan["engine"] not in ("autoresearch", "phi_tiny"):
+        raise LabError("Unsupported engine; expected autoresearch or phi_tiny")
     for key in ("dataset_sha256", "evaluator_sha256", "tokenizer_sha256"):
         if not isinstance(plan[key], str) or not HASH.fullmatch(plan[key]):
             raise LabError("Invalid " + key)
@@ -105,7 +105,9 @@ def parse_autoresearch_log(text):
             key, raw = match.groups()
             if key in found:
                 raise LabError("Duplicate metric: " + key)
-            found[key] = _number(float(raw), key)
+            found[key] = _number(float(raw), key, positive=(key != "peak_vram_mb"))
+            if key == "peak_vram_mb" and found[key] < 0:
+                raise LabError("Negative VRAM is not valid")
     required = {"val_bpb", "training_seconds", "peak_vram_mb"}
     if not required.issubset(found):
         raise LabError("Missing final autoresearch metric(s): " + ", ".join(sorted(required - found.keys())))
@@ -181,6 +183,15 @@ def compare(before, after, *, min_delta=0.0):
         raise LabError("Comparison requires two distinct run IDs")
     if not (before["admissible"] and after["admissible"]):
         raise LabError("Ineligible experiment cannot be ranked")
+    if before["plan"]["engine"] == "phi_tiny":
+        # An educational fixed-step run must not be compared to a run with a
+        # different optimizer step count under the same nominal time cap.
+        for receipt in (before, after):
+            steps = receipt["metrics"].get("num_steps")
+            if steps is None or not steps.is_integer() or steps <= 0:
+                raise LabError("phi_tiny requires a positive integer num_steps")
+        if before["metrics"]["num_steps"] != after["metrics"]["num_steps"]:
+            raise LabError("Incomparable phi_tiny experiments; changed: num_steps")
     delta = before["metrics"]["val_bpb"] - after["metrics"]["val_bpb"]
     return {"schema": "PHI_NEURAL_COMPARISON_R1", "study_id": before["plan"]["study_id"],
             "baseline": before["plan"]["run_id"], "candidate": after["plan"]["run_id"],
