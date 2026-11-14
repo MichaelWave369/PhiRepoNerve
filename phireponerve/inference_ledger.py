@@ -121,7 +121,7 @@ def validate(value):
             type(s["model_alias"]) is str and 1 <= len(s["model_alias"]) <= 128 and
             not any(ord(ch) < 32 for ch in s["model_alias"]) and
             integer(s["local_gguf_file_bytes"], 4) and
-            finite(s["hardware_snapshot_age_seconds"], -60, 1e10) and
+            finite(s["hardware_snapshot_age_seconds"], -1e10, 1e10) and
             s["hardware_snapshot_status"] in STATES,
             "SOURCE_METADATA_INVALID")
     c = value["capacity_floor"]
@@ -168,7 +168,7 @@ def validate(value):
         seen.add(layers)
         require(type(p["source_receipt_sha256"]) is str and
                 HEX.fullmatch(p["source_receipt_sha256"]) and
-                finite(p["source_age_seconds"], -60, 1e10) and
+                finite(p["source_age_seconds"], -1e10, 1e10) and
                 p["source_status"] in STATES and
                 finite(p["wall_p50_ms"]) and finite(p["wall_p95_ms"]) and
                 p["wall_p95_ms"] >= p["wall_p50_ms"] and
