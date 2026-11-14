@@ -92,6 +92,8 @@ def read_json(path: Path):
     try:
         value = json.loads(raw.decode("utf-8"), object_pairs_hook=no_duplicates,
                            parse_constant=no_constant)
+    except InferenceHeld:
+        raise  # Keep precise duplicate-key / nonfinite evidence rejection reasons.
     except (UnicodeError, ValueError) as exc:
         raise InferenceHeld("INPUT_JSON_INVALID") from exc
     return value, hashlib.sha256(raw).hexdigest()
