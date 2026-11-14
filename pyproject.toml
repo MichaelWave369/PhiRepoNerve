@@ -17,6 +17,8 @@ server = ["fastapi>=0.115,<1", "uvicorn>=0.30,<1"]
 
 [project.scripts]
 phireponerve = "phireponerve.cli:main"
+phireponerve-inference-ledger = "phireponerve.inference_ledger:main"
+
 
 [tool.setuptools.packages.find]
 include = ["phireponerve*"]
