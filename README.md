@@ -4,6 +4,10 @@
 
 RepoNerve Rung 1 is a **read-only GitHub fleet observer**. It enumerates GitHub repositories accessible to its credentials, writes successful snapshots to a private local SQLite database, detects changes against the previous complete inventory, and exposes a local read-only dashboard and JSON API. It **does not** run agents, change other repositories, merge PRs, claim a release works, or publish private inventory data.
 
+## R17: Offline inference evidence review
+
+The new [R17 Inference Evidence Ledger](docs/INFERENCE_EVIDENCE_LEDGER_R17.md) reads existing operator-saved PhiServe R15 capacity advice and converts its observations into private, review-only tasks. Use `phireponerve-inference-ledger --advice PATH --out-dir NEW_DIR` for a static local HTML/JSON report. The input is a reported summary, not an authenticated machine observation. No new model is run, no host is ranked, and no queue or agent is controlled.
+
 ## Start in five minutes
 
 Python 3.11+ is recommended.
