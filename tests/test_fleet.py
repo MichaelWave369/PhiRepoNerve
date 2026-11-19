@@ -80,6 +80,29 @@ class InventoryTests(unittest.TestCase):
         with self.assertRaisesRegex(InventoryError, "Unsafe pagination"):
             GitHubClient(token="secret", opener=foreign).inventory("MichaelWave369")
 
+    def test_public_numeric_link_is_bound_and_requests_keep_original_scope(self):
+        first = repo(1)
+        first["owner"]["id"] = 247459237
+        calls = []
+
+        def canonical(req, timeout):
+            query = parse_qs(urlparse(req.full_url).query)
+            calls.append(req.full_url)
+            if query["page"] == ["2"]:
+                self.assertEqual(query["type"], ["owner"])
+                self.assertEqual(query["per_page"], ["100"])
+                self.assertIn("/users/MichaelWave369/repos?", req.full_url)
+                return Response([repo(2)])
+            return Response([first], '<https://api.github.com/user/247459237/repos?page=2&type=all>; rel="next"')
+
+        self.assertEqual(len(GitHubClient(token="", opener=canonical).inventory("MichaelWave369")), 2)
+        self.assertEqual(len(calls), 2)
+        for target in ("/user/9/repos?page=2", "/user/247459237/repos?page=3"):
+            def invalid(req, timeout):
+                return Response([first], f'<https://api.github.com{target}>; rel="next"')
+            with self.subTest(target=target), self.assertRaisesRegex(InventoryError, "Unsafe pagination"):
+                GitHubClient(token="", opener=invalid).inventory("MichaelWave369")
+
 
 class StoreTests(unittest.TestCase):
     def setUp(self):

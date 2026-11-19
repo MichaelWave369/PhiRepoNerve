@@ -77,24 +77,16 @@ class GitHubClient:
         # User token: owner-affiliated inventory, including accessible private repos.
         # Anonymous: documented public-only GitHub endpoint.
         path = "/user/repos" if self.token else "/users/" + owner + "/repos"
-        params = {
-            "per_page": "100",
-            "page": "1",
-        }
+        params = {"per_page": "100", "page": "1"}
         if self.token:
             params.update({"affiliation": "owner", "sort": "full_name", "direction": "asc"})
         else:
             params.update({"type": "owner", "sort": "full_name", "direction": "asc"})
-        url = self.API + path + "?" + parse.urlencode(params)
-        seen_pages, found = set(), {}
-        page = 1
-        while url:
-            if page > max_pages or url in seen_pages:
-                raise InventoryError("Inventory pagination was cyclic or exceeded its limit")
-            parsed = parse.urlparse(url)
-            if parsed.scheme != "https" or parsed.netloc != "api.github.com" or parsed.path != path:
-                raise InventoryError("Unsafe pagination link from GitHub")
-            seen_pages.add(url)
+        found = {}
+        for page in range(1, max_pages + 1):
+            # Never use a server-supplied URL as the next request. Keep the
+            # original owner, visibility, order and page size on every page.
+            url = self.API + path + "?" + parse.urlencode({**params, "page": str(page)})
             batch, link = self._get_page(url)
             for item in batch:
                 row = self._normalize(item, owner)
@@ -103,13 +95,21 @@ class GitHubClient:
                 found[row["github_id"]] = row
             next_url = self._next_link(link)
             if next_url:
-                url = next_url
-            elif len(batch) == 100:
-                # If Link was stripped by a proxy, probe until a short/empty page.
-                page_args = parse.parse_qs(parsed.query)
-                page_args["page"] = [str(int(page_args.get("page", ["1"])[0]) + 1)]
-                url = self.API + path + "?" + parse.urlencode(page_args, doseq=True)
-            else:
-                url = None
-            page += 1
-        return sorted(found.values(), key=lambda row: row["full_name"].casefold())
+                parsed = parse.urlparse(next_url)
+                # GitHub canonicalizes some public user endpoints to their
+                # numeric owner URL in Link headers. Bind it to this page.
+                owner_ids = [(item.get("owner") or {}).get("id") for item in batch]
+                numeric_path = (
+                    not self.token and re.fullmatch(r"/user/[1-9][0-9]*/repos", parsed.path)
+                    and bool(owner_ids) and all(
+                        type(owner_id) is int and str(owner_id) == parsed.path.split("/")[2]
+                        for owner_id in owner_ids)
+                )
+                if (parsed.scheme != "https" or parsed.netloc != "api.github.com" or
+                        not (parsed.path == path or numeric_path) or
+                        parse.parse_qs(parsed.query).get("page") != [str(page + 1)]):
+                    raise InventoryError("Unsafe pagination link from GitHub")
+            elif len(batch) < 100:
+                # Some proxies strip Link. Probe full pages until exhaustion.
+                return sorted(found.values(), key=lambda row: row["full_name"].casefold())
+        raise InventoryError("Inventory pagination exceeded its limit")
