@@ -43,6 +43,33 @@ class GraphCensusTests(unittest.TestCase):
         self.assertEqual(r["by_reported_grade"], {"documented": 1, "verified": 2})
         self.assertEqual(r["authority"], "NONE")
 
+    def test_field_constellation_shared_library_shape(self):
+        l = ledger()
+        shared = edge(4, 3, 4, "shared-library")
+        shared.update(direction="undirected", library="React / react-dom")
+        shared["evidence"] = [
+            dict(url="https://github.com/MichaelWave369/A/blob/" + "a" * 40 +
+                 "/package.json#L1-L2", claim="Fixture A"),
+            dict(url="https://github.com/MichaelWave369/B/blob/" + "b" * 40 +
+                 "/package.json#L1-L2", claim="Fixture B"),
+        ]
+        l["relationships"].append(shared)
+        r = census(inventory(), l)
+        self.assertEqual(r["by_kind"]["shared-library"], 1)
+        self.assertEqual(r["unique_undirected_pairs"], 3)
+        for value in (None, "", " ", 42):
+            bad = copy.deepcopy(l)
+            bad["relationships"][-1]["library"] = value
+            with self.assertRaises(ValueError):
+                census(inventory(), bad)
+        missing = copy.deepcopy(l)
+        del missing["relationships"][-1]["library"]
+        with self.assertRaises(ValueError):
+            census(inventory(), missing)
+        l["relationships"][0]["library"] = "Not a shared-library record"
+        with self.assertRaises(ValueError):
+            census(inventory(), l)
+
     def test_empty_and_singleton(self):
         for count in (0, 1):
             i, l = inventory(), ledger()
