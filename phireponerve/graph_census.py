@@ -51,8 +51,13 @@ def census(inventory, ledger):
     record_ids, relation_keys, pairs = set(), set(), set()
     grades, kinds = Counter(), Counter()
     for edge in relationships:
-        require(exact(edge, "id from to status kind direction summary scope evidence reviewedAt"),
+        fields = "id from to status kind direction summary scope evidence reviewedAt"
+        shared = isinstance(edge, dict) and edge.get("kind") == "shared-library"
+        require(exact(edge, fields + (" library" if shared else "")),
                 "Invalid relationship fields")
+        if shared:
+            require(isinstance(edge["library"], str) and 0 < len(edge["library"]) <= 160
+                    and bool(edge["library"].strip()), "Invalid shared library declaration")
         require(all(isinstance(edge[k], str) and edge[k] for k in
                     ("id", "from", "to", "status", "kind", "direction", "summary", "scope"))
                 and _valid_timestamp(edge["reviewedAt"]), "Invalid relationship value")
